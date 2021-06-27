@@ -92,7 +92,7 @@ export class Controller {
 
     this.addEvents();
 
-    this.renderPoints();
+    // this.renderPoints();
   }
 
   /** Registra eventos de cliques para os botões de filtro */
@@ -106,23 +106,94 @@ export class Controller {
     // Evento de clique do botão de filtro "Mostrar todos"
     document.querySelector('.button.selected')?.classList.remove('selected');
     document.querySelector('#btn-filtro-todos').classList.add('selected');
+    // Limpa todos os pontos desenhados na tela
+    this.clearPoints();
+    // Desenha todos os pontos novamente na tela
+    this.renderPoints();
   }
 
   btnFiltroInsideClick = () => {
     // Evento de clique do botão de filtro "Mostrar apenas do mapa"
     document.querySelector('.button.selected')?.classList.remove('selected');
     document.querySelector('#btn-filtro-inside').classList.add('selected');
+    // Limpa todos os pontos desenhados na tela
+    this.clearPoints();
+    // Desenha os pontos que estão dentro do mapa
+    this.renderPointsFiltro(true);
   }
 
   btnFiltroOutsideClick = () => {
     // Evento de clique do botão de filtro "Mostrar apenas pontos fora do mapa"
     document.querySelector('.button.selected')?.classList.remove('selected');
     document.querySelector('#btn-filtro-outside').classList.add('selected');
+    // Limpa todos os pontos desenhados na tela
+    this.clearPoints();
+    // Desenha os pontos que estão fora do mapa
+    this.renderPointsFiltro(false);
   }
-
+  
   /**  Renderiza os pontos carregados no Mapa */
   renderPoints() {
-    //   PROGRAME AQUI :)
+
+  //  Retorna a promise que reúne os dados do arquivo data.json
+    this.map.getPoints().then(
+      response => {
+        if (response.length > 1) {
+          this.map.points = response;
+        } else {
+          this.map.points = response.points;
+        }
+        // Se houver pontos adiciona eles com drawPoint
+        if (this.map.points.length > 0) {
+          // Percorre toda a relação de pontos
+          this.map.points.forEach(point => {
+              // Desenha o ponto
+            this.drawPoint(point);
+          });
+        }
+      }
+    );
+  }
+
+  /**
+   * Desenha os pontos de dentro ou de fora dependendo do parâmetro passado
+   * @param {Boolean} lado Especifica se o ponto vai ser desenhado dentro 
+   * ou fora se for, respecvamente true ou false.
+   */
+  renderPointsFiltro(lado) {
+    //  Retorna a promise que reúne os dados do arquivo data.json 
+    this.map.getPoints().then(
+      response => {
+        if (response.length > 1) {
+          this.map.points = response;
+        } else {
+          this.map.points = response.points;
+        }
+        // Se houver pontos adiciona eles com drawPoint
+        if (this.map.points.length > 0) {
+          // Percorre toda a relação de pontos
+          this.map.points.forEach(point => {
+            // É feito o desenho se o ponto está conforme o parâmetro
+            if (this.map.contains(point) === lado) {
+              // Desenha o ponto
+              this.drawPoint(point); 
+            }
+          });
+        }
+      }
+    );
+  }
+
+  /**
+   * O método remove todos os pontos desenhados
+   */
+  clearPoints(){
+    // Identifica todos os pontos desenhados e reune eles em uma lista
+    var points = document.getElementsByClassName('map__point');
+    // Remove todos os pontos um a um
+    while(points.length > 0) {
+      points[0].parentNode.removeChild(points[0]);
+    }
   }
 
   /**
